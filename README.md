@@ -28,3 +28,53 @@ GPIO内部通过上拉电阻接到电源,默认状态为高电平。常用于I2C
 
 模拟输入(Analog Input)
 GPIO输入连接到ADC,用于模拟量输入采集。
+
+
+上面是GPIO端口的设置，下面是标准库GPIO的使用
+
+新建一个.h文件存放头文件，即包含函数声明和宏定义；一个.c文件存放程序文件。
+
+.h中
+
+#ifndef __文件名_H
+#define	__文件名_H
+
+//更换自己的库文件
+#include "stm32f10x.h"
+
+//宏定义串口时钟以及搭载的APB2还是APB1
+#define LED_G_PORT    		GPIOC			             
+#define LED_G_CLK 	   	  RCC_APB2Periph_GPIOC		
+#define LED_G_PIN		    	GPIO_Pin_0			        
+
+//定义函数
+void LED_GPIO_Config(void);	
+void LED_G_ON (void);	
+void LED_G_OFF (void);
+
+.c中
+#include "文件名.h"
+
+void BEEP_GPIO_Config(void)
+{		
+    //定义一个GPIO_InitStructure的结构体
+		GPIO_InitTypeDef GPIO_InitStructure;
+    //使能RCC的时钟
+		RCC_APB2PeriphClockCmd(LED_G_CLK , ENABLE); 
+		//设置GPIO串口												   
+		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;	
+    //设置GPIO输出模式为推挽输出	
+		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;   
+    //设置GPIO速率为50Mhz
+		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 
+    //调用库函数，初始化LED的GPIO
+		GPIO_Init(LED_G_PORT, &GPIO_InitStructure);			 
+}
+
+
+
+具体举2个例子
+1、点亮LED
+
+
+2、按键检测（案件已经硬件消抖）
