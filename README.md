@@ -75,6 +75,92 @@ void BEEP_GPIO_Config(void)
 
 具体举2个例子
 1、点亮LED
+#define LED_R_GPIO_PORT				GPIOB
+#define LED_R_GPIO_CLK 				RCC_APB2Periph_GPIOB
+#define LED_R_GPIO_PIN		   	        GPIO_Pin_5
 
+void LED_R_ON(void)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+	RCC_APB2PeriphClockCmd(LED_R_GPIO_CLK, ENABLE); 
+	GPIO_InitStructure.GPIO_Pin = LED_R_GPIO_PIN;	
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 	
+	GPIO_Init(LED_R_GPIO_PORT, &GPIO_InitStructure);		
+}
 
+void LED_R_OFF(void)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+	RCC_APB2PeriphClockCmd(LED_R_GPIO_CLK, DISABLE); 
+	GPIO_InitStructure.GPIO_Pin = LED_G_GPIO_PIN;	
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 	
+	GPIO_Init(LED_R_GPIO_PORT, &GPIO_InitStructure);		
+}
+
+int main(void)
+{		
+	while(1)
+	{		
+		LED_R_ON();
+		Delay(0x0FFFFF);	
+		LED_R_ON();
+		Delay(0x0FFFFF);
+	}
+}
+
+void Delay(__IO uint32_t nCount)	 //延时函数
+{
+	for(; nCount != 0; nCount--);
+}
 2、按键检测（案件已经硬件消抖）
+#define    KEY1_GPIO_CLK     RCC_APB2Periph_GPIOA
+#define    KEY1_GPIO_PORT    GPIOA			   
+#define    KEY1_GPIO_PIN		 GPIO_Pin_0
+
+#define    KEY2_GPIO_CLK     RCC_APB2Periph_GPIOC
+#define    KEY2_GPIO_PORT    GPIOC		   
+#define    KEY2_GPIO_PIN		  GPIO_Pin_13
+
+void Key_GPIO_Config(void)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+	RCC_APB2PeriphClockCmd(KEY1_GPIO_CLK|KEY2_GPIO_CLK,ENABLE);
+	GPIO_InitStructure.GPIO_Pin = KEY1_GPIO_PIN; 
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING; 
+	GPIO_Init(KEY1_GPIO_PORT, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = KEY2_GPIO_PIN; 
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING; 
+	GPIO_Init(KEY2_GPIO_PORT, &GPIO_InitStructure);	
+}
+uint8_t Key_Scan(GPIO_TypeDef* GPIOx,uint16_t GPIO_Pin)
+{			
+	if(GPIO_ReadInputDataBit(GPIOx,GPIO_Pin) == KEY_ON )  
+	{	 
+		while(GPIO_ReadInputDataBit(GPIOx,GPIO_Pin) == KEY_ON);   
+		return 	KEY_ON;	 
+	}
+	else
+		return KEY_OFF;
+}
+
+int main(void)
+{	
+	LED_GPIO_Config();
+	LED1_ON;
+	Key_GPIO_Config();
+	
+	while(1)                            
+	{	   
+		if( Key_Scan(KEY1_GPIO_PORT,KEY1_GPIO_PIN) == KEY_ON  )
+		{
+			LED1_TOGGLE;
+		} 
+
+		if( Key_Scan(KEY2_GPIO_PORT,KEY2_GPIO_PIN) == KEY_ON  )
+		{
+			LED2_TOGGLE;
+		}		
+	}
+}
